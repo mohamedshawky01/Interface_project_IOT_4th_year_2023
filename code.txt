@@ -1,0 +1,47 @@
+import RPi.GPIO as GPIO
+import time, sys
+
+Soil	= 21
+WaterFlow	= 23
+Pump	= 16
+Solenoid = 12
+
+global count
+count = 0
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(Pump, 		GPIO.OUT)
+GPIO.setup(Solenoid, 	GPIO.OUT)
+GPIO.setup(Soil , 		GPIO.IN)
+GPIO.setup(WaterFlow , 	GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+
+def SoilFunction(channel):
+	if GPIO.input(channel):
+		print("Water")
+		
+	else:
+		print("Dry")
+		GPIO.output(Pump , GPIO.HIGH)
+		GPIO.output(Solenoid , GPIO.HIGH)		
+
+def countPulse(channel):
+	global count
+	count = count + 1
+	Flow = (count/( 60 * 7.5 )) * 1000
+	print(Flow)
+	if FLOW >= 1000 :
+		GPIO.output(Pump , GPIO.HIGH)
+		GPIO.output(Solenoid , GPIO.HIGH)
+		count = 0
+
+GPIO.add_event_detect(Soil, GPIO.BOTH, callback=SoilFunction)
+GPIO.add_event_detect(WaterFlow, GPIO.BOTH, callback=countPulse)
+	
+While True :
+	try:
+		time.sleep(3600)
+	except KeyboardInterrupt:
+		print("\ncaught keyboard interrupt!, bye")
+		GPIO.cleanup()
+		sys.exit()
